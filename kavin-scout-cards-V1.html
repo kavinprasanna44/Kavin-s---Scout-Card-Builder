@@ -1,0 +1,784 @@
+<title>Chalk Scout Cards</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Layout: opponent selector strips pinned to the top and bottom edges (swappable), the scout card fills the middle like a sideline whiteboard. Deliberately single dark theme; printed cards are white. */
+:root{
+  color-scheme:dark;
+  --bg:#0a0f12;
+  --panel:rgba(255,255,255,.045);
+  --panel-2:rgba(255,255,255,.09);
+  --panel-solid:rgba(16,24,28,.82);
+  --line:rgba(255,255,255,.08);
+  --fg:#e6ecee;
+  --muted:#8c99a1;
+  --faint:#56636b;
+  --off:#8db7ff;
+  --def:#f2a27c;
+  --field:#0e1815;
+  --ok:#86d4b4;
+  --warn:#ffd27a;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:radial-gradient(1200px 600px at 50% 40%,#101a19 0%,var(--bg) 70%) fixed,var(--bg);
+  color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.4;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--off);outline-offset:2px}
+.app{height:100%;max-width:1480px;margin:0 auto;display:flex;flex-direction:column;gap:12px;padding-block:14px}
+
+/* header */
+.top{order:0;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:10px;margin-right:auto}
+.brand b{font-family:var(--f-display);font-weight:700;font-size:26px;letter-spacing:.02em}
+.brand span{font-family:var(--f-display);font-weight:500;font-size:16px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
+.btn{border:1px solid var(--line);background:var(--panel);padding:7px 13px;border-radius:10px;font-weight:500;font-size:14px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:background .15s}
+.btn:hover{background:var(--panel-2)}
+.btn.primary{background:rgba(141,183,255,.16);border-color:rgba(141,183,255,.35)}
+.btn.primary:hover{background:rgba(141,183,255,.24)}
+.dirty{font-family:var(--f-mono);font-size:11px;color:var(--warn);letter-spacing:.04em}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* strips */
+.strip{position:relative;display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;padding:10px 12px;border-radius:16px;
+  background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+#stripDef{order:1} #main{order:2} #stripOff{order:3}
+.app.flip #stripOff{order:1} .app.flip #stripDef{order:3}
+.side-tag{font-family:var(--f-display);font-weight:700;font-size:15px;letter-spacing:.16em;text-transform:uppercase;padding:4px 10px;border-radius:8px}
+.O .side-tag{color:var(--off);background:rgba(141,183,255,.1)}
+.D .side-tag{color:var(--def);background:rgba(242,162,124,.1)}
+.grp{display:flex;align-items:center;gap:8px;min-width:0;max-width:100%}
+.grp>label,.lbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.seg{display:inline-flex;gap:2px;padding:3px;border-radius:10px;background:rgba(0,0,0,.22);border:1px solid var(--line);overflow-x:auto;max-width:100%;scrollbar-width:none}
+.seg button{border:0;background:transparent;padding:5px 10px;border-radius:7px;color:var(--muted);font-family:var(--f-mono);font-size:12.5px;white-space:nowrap}
+.seg button:hover{color:var(--fg)}
+.seg button[aria-pressed="true"]{background:var(--panel-2);color:var(--fg)}
+.O .seg button[aria-pressed="true"]{box-shadow:inset 0 -2px 0 var(--off)}
+.D .seg button[aria-pressed="true"]{box-shadow:inset 0 -2px 0 var(--def)}
+.seg.words button{font-family:var(--f-body);font-size:13.5px}
+.pick{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:rgba(0,0,0,.22);padding:6px 12px;border-radius:10px;font-weight:600;font-size:14.5px}
+.pick:hover{background:var(--panel-2)}
+.pick small{font-family:var(--f-mono);font-weight:500;color:var(--muted);font-size:11.5px}
+.pick::after{content:"";width:7px;height:7px;border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:rotate(45deg) translateY(-2px);margin-left:2px}
+.strip .spacer{flex:1}
+.ghost{border:0;background:transparent;color:var(--muted);font-size:13px;padding:6px 8px;border-radius:8px}
+.ghost:hover{color:var(--fg);background:var(--panel)}
+.readout{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+
+/* popover */
+.pop{position:absolute;left:0;right:0;z-index:20;max-height:min(62vh,560px);overflow:auto;padding:16px;border-radius:16px;
+  background:var(--panel-solid);border:1px solid var(--line);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);box-shadow:0 24px 60px rgba(0,0,0,.45)}
+.strip.at-top .pop{top:calc(100% + 8px)}
+.strip.at-bottom .pop{bottom:calc(100% + 8px)}
+.pop h4{margin:4px 0 10px;font-family:var(--f-display);font-weight:600;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.pop h4:not(:first-child){margin-top:18px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tile{display:flex;flex-direction:column;gap:6px;padding:8px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.025);text-align:left}
+.tile:hover{background:var(--panel-2)}
+.tile[aria-pressed="true"]{border-color:rgba(255,255,255,.35);background:var(--panel-2)}
+.tile svg{width:100%;height:auto;display:block;border-radius:8px}
+.tile .tn{font-weight:600;font-size:13.5px;line-height:1.2}
+.tile .tp{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+
+/* main */
+#main{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.field-in{display:flex;align-items:center;gap:7px}
+.field-in input,.field-in select{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:8px;padding:5px 9px;min-width:0}
+.field-in input:focus,.field-in select:focus{border-color:rgba(255,255,255,.25);outline:none}
+#mNum{width:58px;font-family:var(--f-mono)}
+#mDist{width:56px;font-family:var(--f-mono)}
+#mOpp{width:170px}
+#mNotes{width:min(360px,100%)}
+.notes-in{flex:1;min-width:200px}
+.notes-in input{width:100%}
+.cardwrap{position:relative;flex:1;min-height:260px;border-radius:20px;overflow:hidden;background:var(--field);border:1px solid var(--line)}
+#card{position:absolute;inset:0}
+#card svg{width:100%;height:100%;display:block;touch-action:none;user-select:none;-webkit-user-select:none}
+#card .pl{cursor:grab}
+#card .pl:active{cursor:grabbing}
+.legend{position:absolute;left:14px;bottom:10px;display:flex;gap:14px;font-size:12px;color:var(--muted);pointer-events:none;flex-wrap:wrap}
+.legend i{display:inline-block;width:16px;height:0;border-top:2px solid currentColor;vertical-align:middle;margin-right:5px}
+.legend .dsh{border-top-style:dashed}
+.legend .dot{border-top-style:dotted}
+
+/* inspector */
+.insp{position:absolute;top:12px;right:12px;width:260px;padding:14px;border-radius:16px;z-index:5;
+  background:var(--panel-solid);border:1px solid var(--line);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);display:flex;flex-direction:column;gap:12px;box-shadow:0 18px 50px rgba(0,0,0,.35)}
+.insp-h{display:flex;align-items:center;gap:8px}
+.insp-h b{font-family:var(--f-display);font-size:24px;line-height:1}
+.insp-h .x{margin-left:auto;border:0;background:transparent;color:var(--muted);font-size:20px;line-height:1;padding:2px 6px;border-radius:6px}
+.insp-h .x:hover{color:var(--fg);background:var(--panel)}
+.tag{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;padding:3px 7px;border-radius:6px;font-weight:600}
+.tag.O{color:var(--off);background:rgba(141,183,255,.12)}
+.tag.D{color:var(--def);background:rgba(242,162,124,.12)}
+.insp .sub{font-size:13px;color:var(--muted);margin-top:-6px}
+.insp label{display:flex;flex-direction:column;gap:5px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.insp input,.insp select{text-transform:none;letter-spacing:0;font-size:14px;color:var(--fg);background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:8px;padding:7px 9px}
+.insp .hint{margin:0;font-size:12.5px;color:var(--muted)}
+
+/* drawer + modal */
+.scrim{position:fixed;inset:0;background:rgba(3,6,8,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:40}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(400px,100%);z-index:41;padding:20px max(20px,env(safe-area-inset-right,0px)) 20px 20px;
+  padding-top:max(20px,env(safe-area-inset-top,0px));background:var(--panel-solid);border-left:1px solid var(--line);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);overflow:auto;display:flex;flex-direction:column;gap:16px}
+.drawer h2,.modal h2{margin:0;font-family:var(--f-display);font-weight:700;font-size:24px;letter-spacing:.02em}
+.drawer .x,.modal .x{border:0;background:transparent;color:var(--muted);font-size:22px;padding:2px 8px;border-radius:8px}
+.drawer .x:hover,.modal .x:hover{background:var(--panel);color:var(--fg)}
+.dh{display:flex;align-items:center;justify-content:space-between}
+.opp h3{margin:0 0 8px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.lib-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.025);margin-bottom:8px}
+.lib-item.cur{border-color:rgba(141,183,255,.4)}
+.lib-item .num{font-family:var(--f-mono);font-size:13px;color:var(--muted);width:30px}
+.lib-item .bd{flex:1;min-width:0}
+.lib-item .t1{font-weight:600;font-size:14px}
+.lib-item .t2{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-btn{border:1px solid var(--line);background:transparent;border-radius:8px;padding:4px 8px;font-size:12.5px;color:var(--muted)}
+.mini-btn:hover{color:var(--fg);background:var(--panel)}
+.mini-btn.danger{color:#ff9d9d}
+.empty{color:var(--muted);font-size:14px}
+.modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:41;width:min(860px,calc(100% - 32px));max-height:calc(100% - 40px);overflow:auto;
+  padding:22px;border-radius:20px;background:var(--panel-solid);border:1px solid var(--line);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);display:flex;flex-direction:column;gap:14px}
+.modal p{margin:0;color:var(--muted);font-size:14px;max-width:65ch}
+.modal textarea{width:100%;min-height:200px;resize:vertical;background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:12px;padding:12px;font-family:var(--f-mono);font-size:12px;line-height:1.5}
+.sheet{background:#fff;border-radius:10px;padding:10px}
+.sheet img{width:100%;display:block}
+.msg{font-size:13px;color:var(--ok);min-height:1.2em}
+.toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--panel-solid);border:1px solid var(--line);padding:9px 16px;border-radius:12px;font-size:14px;backdrop-filter:blur(16px)}
+#printSheet{display:none}
+
+@media (max-width:760px){
+  html,body{height:auto}
+  .app{height:auto}
+  .cardwrap{flex:none;aspect-ratio:557/334;min-height:0}
+  .insp{position:relative;top:auto;right:auto;width:auto}
+  .insp-wrap-phone{display:block}
+  .legend{display:none}
+  #mOpp{width:130px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{
+  body{background:#fff;padding:0}
+  .app,.scrim,.drawer,.modal,.toast{display:none!important}
+  #printSheet{display:block}
+  #printSheet svg{width:100%;height:auto}
+}
+</style>
+
+<div class="app" id="app">
+  <header class="top">
+    <div class="brand"><b>Chalk</b><span>Scout cards</span></div>
+    <span class="dirty" id="dirty" hidden>Unsaved</span>
+    <div class="btn-row">
+      <button class="btn" data-act="new">New card</button>
+      <button class="btn primary" data-act="save">Save card</button>
+      <button class="btn" data-act="lib" id="libBtn">Library</button>
+      <button class="btn" data-act="flip" title="Swap which side is on top">Flip sides</button>
+      <button class="btn" data-act="print">Print view</button>
+      <button class="btn" data-act="export">Export</button>
+    </div>
+  </header>
+
+  <section class="strip D" id="stripDef" aria-label="Defense selectors"></section>
+
+  <main id="main">
+    <div class="meta">
+      <div class="field-in"><span class="lbl">Card</span><input id="mNum" type="number" min="1" inputmode="numeric"></div>
+      <div class="field-in"><span class="lbl">Opponent</span><input id="mOpp" type="text" placeholder="Opponent name"></div>
+      <div class="field-in"><span class="lbl">Scouting their</span>
+        <div class="seg words" id="odkSeg"><button data-act="odk" data-v="O">Offense</button><button data-act="odk" data-v="D">Defense</button></div></div>
+      <div class="field-in"><span class="lbl">Down</span>
+        <select id="mDown"><option value="">–</option><option>1</option><option>2</option><option>3</option><option>4</option></select>
+        <span class="lbl">&amp;</span><input id="mDist" type="text" placeholder="10"></div>
+      <div class="field-in notes-in"><span class="lbl">Notes</span><input id="mNotes" type="text" placeholder="Coaching point for the scout team"></div>
+    </div>
+    <div class="cardwrap">
+      <div id="card"></div>
+      <div class="legend" aria-hidden="true">
+        <span><i></i>Route / rush</span><span><i class="dsh"></i>Zone drop</span><span><i class="dot"></i>Man</span><span>Dashed ring = team adjustment</span>
+      </div>
+      <div class="insp" id="insp" hidden></div>
+    </div>
+  </main>
+
+  <section class="strip O" id="stripOff" aria-label="Offense selectors"></section>
+</div>
+
+<div id="overlay"></div>
+<div id="printSheet"></div>
+
+<script>
+/* ===================== Football model (pure logic) ===================== */
+const U=10, HALF=26.65, PAD=12, YMIN=-10, YMAX=21;
+const ON=-0.7, OFF=-1.6;
+
+// Formations, drawn strength right. x = yards from ball (+ right), y = yards from LOS (- = offense backfield).
+const FORMS=[
+ {id:'00-empty32',name:'Empty 3x2',pers:'00',qb:'gun',pl:[['X',-19,ON,'WR'],['F',-11,OFF,'WR'],['H',8.5,OFF,'WR'],['Y',13,OFF,'WR'],['Z',19,ON,'WR']]},
+ {id:'00-quads',name:'Empty Quads',pers:'00',qb:'gun',pl:[['X',-19,ON,'WR'],['F',7.5,OFF,'WR'],['H',11,OFF,'WR'],['Y',14.5,OFF,'WR'],['Z',19,ON,'WR']]},
+ {id:'01-empty',name:'Empty TE 3x2',pers:'01',qb:'gun',pl:[['X',-19,ON,'WR'],['F',-11,OFF,'WR'],['Y',6,ON,'TE'],['H',12,OFF,'WR'],['Z',19,OFF,'WR']]},
+ {id:'10-doubles',name:'Gun Doubles',pers:'10',qb:'gun',pl:[['X',-19,ON,'WR'],['H',-11,OFF,'WR'],['Y',11,OFF,'WR'],['Z',19,ON,'WR'],['F',-2.2,-5,'RB']]},
+ {id:'10-trips',name:'Gun Trips',pers:'10',qb:'gun',pl:[['X',-19,ON,'WR'],['Y',8,OFF,'WR'],['H',12.5,OFF,'WR'],['Z',19,ON,'WR'],['F',-2.2,-5,'RB']]},
+ {id:'10-bunch',name:'Gun Bunch',pers:'10',qb:'gun',pl:[['X',-19,ON,'WR'],['H',11.5,ON,'WR'],['Y',10,-2.1,'WR'],['Z',13,-2.1,'WR'],['F',-2.2,-5,'RB']]},
+ {id:'10-pistol',name:'Pistol Doubles',pers:'10',qb:'pistol',pl:[['X',-19,ON,'WR'],['H',-11,OFF,'WR'],['Y',11,OFF,'WR'],['Z',19,ON,'WR'],['F',0,-7,'RB']]},
+ {id:'11-ace',name:'Ace',pers:'11',qb:'uc',pl:[['X',-19,ON,'WR'],['H',-11,OFF,'WR'],['Y',6,ON,'TE'],['Z',19,OFF,'WR'],['F',0,-6.5,'RB']]},
+ {id:'11-doubles',name:'Gun Doubles',pers:'11',qb:'gun',pl:[['X',-19,ON,'WR'],['H',-11,OFF,'WR'],['Y',6,ON,'TE'],['Z',19,OFF,'WR'],['F',-2.2,-5,'RB']]},
+ {id:'11-trips',name:'Gun Trips',pers:'11',qb:'gun',pl:[['X',-19,ON,'WR'],['Y',6,ON,'TE'],['H',12,OFF,'WR'],['Z',19,OFF,'WR'],['F',-2.2,-5,'RB']]},
+ {id:'11-pistol-trips',name:'Pistol Trips',pers:'11',qb:'pistol',pl:[['X',-19,ON,'WR'],['Y',6,ON,'TE'],['H',12,OFF,'WR'],['Z',19,OFF,'WR'],['F',0,-7,'RB']]},
+ {id:'12-ace',name:'Ace 2TE',pers:'12',qb:'uc',pl:[['X',-19,OFF,'WR'],['H',-6,ON,'TE'],['Y',6,ON,'TE'],['Z',19,OFF,'WR'],['F',0,-6.5,'RB']]},
+ {id:'12-wing',name:'Wing',pers:'12',qb:'uc',pl:[['X',-19,ON,'WR'],['Y',6,ON,'TE'],['H',7.6,-1.9,'TE'],['Z',19,OFF,'WR'],['F',0,-6.5,'RB']]},
+ {id:'12-gun',name:'Gun 2TE Doubles',pers:'12',qb:'gun',pl:[['X',-19,OFF,'WR'],['H',-6,ON,'TE'],['Y',6,ON,'TE'],['Z',19,OFF,'WR'],['F',-2.2,-5,'RB']]},
+ {id:'13-heavy',name:'Heavy',pers:'13',qb:'uc',pl:[['X',-19,OFF,'WR'],['U',-6,ON,'TE'],['Y',6,ON,'TE'],['H',7.6,-1.9,'TE'],['F',0,-6.5,'RB']]},
+ {id:'20-split',name:'Gun Split Backs',pers:'20',qb:'gun',pl:[['X',-19,ON,'WR'],['H',11,OFF,'WR'],['Z',19,ON,'WR'],['F',-2.2,-5,'RB'],['T',2.2,-5,'RB']]},
+ {id:'21-ipro',name:'I-Form Pro',pers:'21',qb:'uc',pl:[['X',-19,ON,'WR'],['Y',6,ON,'TE'],['Z',19,OFF,'WR'],['F',0,-4.3,'FB'],['T',0,-7,'RB']]},
+ {id:'21-offset',name:'Offset I Strong',pers:'21',qb:'uc',pl:[['X',-19,ON,'WR'],['Y',6,ON,'TE'],['Z',19,OFF,'WR'],['F',2.2,-4.3,'FB'],['T',0,-7,'RB']]},
+ {id:'21-split',name:'Split Backs',pers:'21',qb:'uc',pl:[['X',-19,ON,'WR'],['Y',6,ON,'TE'],['Z',19,OFF,'WR'],['F',-2.4,-5,'FB'],['T',2.4,-5,'RB']]},
+ {id:'22-itwin',name:'I-Form Twin TE',pers:'22',qb:'uc',pl:[['H',-6,ON,'TE'],['Y',6,ON,'TE'],['X',19,OFF,'WR'],['F',0,-4.3,'FB'],['T',0,-7,'RB']]},
+ {id:'23-jumbo',name:'Jumbo',pers:'23',qb:'uc',pl:[['U',-6,ON,'TE'],['Y',6,ON,'TE'],['H',7.6,-1.9,'TE'],['F',0,-4.3,'FB'],['T',0,-7,'RB']]},
+];
+const FORM_BY=Object.fromEntries(FORMS.map(f=>[f.id,f]));
+const PERS_ORDER=['00','01','10','11','12','13','20','21','22','23'];
+
+// Routes in (outward, upfield) yards from the release point. Outward = toward the receiver's sideline.
+const ROUTES={
+ go:{n:'Go',p:[[0.6,17]]}, seam:{n:'Seam',p:[[0,16]]}, slant:{n:'Slant',p:[[0,1.5],[-6,7]]},
+ hitch:{n:'Hitch',p:[[0,5.5],[0.8,4.6]]}, curl:{n:'Curl',p:[[0,10],[-1.2,9]]}, out:{n:'Out',p:[[0,6],[5,6]]},
+ dig:{n:'Dig',p:[[0,12],[-10,12]]}, in5:{n:'Shallow in',p:[[0,5],[-9,5]]}, corner:{n:'Corner',p:[[0,10],[5,16]]},
+ post:{n:'Post',p:[[0,10],[-6,17]]}, comeback:{n:'Comeback',p:[[0,14],[1.8,12]]}, sail:{n:'Sail',p:[[0,9],[6,13]]},
+ flat:{n:'Flat',p:[[2,1],[8,2]]}, arrow:{n:'Arrow',p:[[6,4]]}, drag:{n:'Drag',p:[[-2,2],[-26,3]]},
+ mesh:{n:'Mesh',p:[[-2,5],[-28,6]]}, stick:{n:'Stick',p:[[0,5],[-1,5]]}, sit:{n:'Sit',p:[[0,7],[-0.8,7]]},
+ wheel:{n:'Wheel',p:[[4,1],[7,4],[7,16]]}, swing:{n:'Swing',p:[[3,-0.4],[8,1]]},
+};
+
+// Concepts assign routes by alignment: S1 = strong side #1 (outside-in), W2 = weak #2, B = back.
+const PLAYS={
+ none:{n:'Alignment only',type:'none'},
+ mesh:{n:'Mesh',type:'pass',map:{S1:'corner',S2:'drag',S3:'sit',W1:'mesh',W2:'sit',W3:'flat',B:'swing'}},
+ verts:{n:'Four Verts',type:'pass',map:{S1:'go',S2:'seam',S3:'seam',W1:'go',W2:'seam',W3:'sit',B:'swing'}},
+ smash:{n:'Smash',type:'pass',map:{S1:'hitch',S2:'corner',S3:'sit',W1:'hitch',W2:'corner',W3:'flat',B:'pro'}},
+ stick:{n:'Stick',type:'pass',map:{S1:'go',S2:'stick',S3:'flat',W1:'slant',W2:'stick',W3:'flat',B:'flat'}},
+ flood:{n:'Flood',type:'pass',map:{S1:'go',S2:'sail',S3:'flat',W1:'post',W2:'drag',W3:'sit',B:'flat'}},
+ curlflat:{n:'Curl-Flat',type:'pass',map:{S1:'curl',S2:'flat',S3:'sit',W1:'curl',W2:'flat',W3:'sit',B:'pro'}},
+ slantflat:{n:'Slant-Flat',type:'pass',map:{S1:'slant',S2:'flat',S3:'sit',W1:'slant',W2:'flat',W3:'sit',B:'pro'}},
+ levels:{n:'Levels',type:'pass',map:{S1:'dig',S2:'in5',S3:'seam',W1:'post',W2:'in5',W3:'flat',B:'pro'}},
+ dagger:{n:'Dagger',type:'pass',map:{S1:'dig',S2:'seam',S3:'flat',W1:'go',W2:'drag',W3:'sit',B:'pro'}},
+ iz:{n:'Inside Zone',type:'run',run:'iz'},
+ oz:{n:'Outside Zone',type:'run',run:'oz'},
+ power:{n:'Power',type:'run',run:'power',pull:['BG']},
+ counter:{n:'Counter',type:'run',run:'counter',pull:['BG','BT']},
+};
+const PASS_IDS=['mesh','verts','smash','stick','flood','curlflat','slantflat','levels','dagger'];
+const RUN_IDS=['iz','oz','power','counter'];
+
+const FRONTS={
+ '43over':{n:'4-3 Over',db:['CS','CW','FS','SS']},
+ '43under':{n:'4-3 Under',db:['CS','CW','FS','SS']},
+ '34':{n:'3-4 Okie',db:['CS','CW','FS','SS']},
+ '44':{n:'4-4',db:['CS','CW','FS']},
+ '425':{n:'4-2-5 Nickel',db:['CS','CW','FS','SS','NB']},
+ '335':{n:'3-3-5 Stack',db:['CS','CW','FS','SS','WS']},
+};
+const FRONT_IDS=Object.keys(FRONTS);
+const COVS=[['c0','Cover 0'],['c1','Cover 1'],['c2','Cover 2'],['tampa','Tampa 2'],['c3','Cover 3'],['c4','Quarters'],['c6','Cover 6']];
+const COV_NAME=Object.fromEntries(COVS);
+
+const ZBASE={d3:{x:17.8,y:16,w:16.4,h:7,n:'Deep 1/3'},d2:{x:13.3,y:15.5,w:25,h:8,n:'Deep 1/2'},
+ q4O:{x:20,y:15,w:12,h:8,n:'Deep 1/4'},q4I:{x:6.7,y:15,w:12,h:8,n:'Deep 1/4'},
+ flat:{x:21,y:4,w:10,h:6,n:'Flat'},cf:{x:16,y:6.5,w:12,h:7,n:'Curl/Flat'},curl:{x:12,y:8.5,w:9,h:6,n:'Curl'},hook:{x:5,y:8,w:8,h:6,n:'Hook'}};
+const ZFIX={d1:{x:0,y:16,w:30,h:7,n:'Deep middle'},d3M:{x:0,y:16,w:16.4,h:7,n:'Deep 1/3'},hookM:{x:0,y:8,w:9,h:6,n:'Middle hook'},
+ tampa:{x:0,y:13,w:10,h:7,n:'Deep middle'},rat:{x:0,y:6,w:7,h:4,n:'Rat'}};
+const ZONE_KEYS=['d1','d3S','d3M','d3W','d2S','d2W','q4OS','q4IS','q4IW','q4OW','tampa','flatS','cfS','curlS','hookS','hookM','rat','hookW','curlW','cfW','flatW'];
+function zoneGeom(key,s){
+  if(ZFIX[key]) return {...ZFIX[key]};
+  const side=key.slice(-1), base=ZBASE[key.slice(0,-1)]; if(!base) return null;
+  const sg=side==='S'?s:-s; return {...base,x:base.x*sg};
+}
+function zoneLabel(key){const g=ZFIX[key]||ZBASE[key.slice(0,-1)]; if(!g) return key; if(ZFIX[key]) return g.n; return g.n+(key.endsWith('S')?' · strong':' · weak');}
+
+const clampX=x=>Math.max(-HALF+0.8,Math.min(HALF-0.8,x));
+
+function buildOffense(card){
+  const f=FORM_BY[card.off.form]||FORMS[0]; const m=card.off.strength==='L'?-1:1;
+  const ps=[];
+  [['LT',-4],['LG',-2],['C',0],['RG',2],['RT',4]].forEach(([id,x])=>ps.push({id,label:id==='C'?'C':'',x,y:-0.7,kind:'OL',side:'O'}));
+  ps.push({id:'QB',label:'Q',x:0,y:{uc:-1.6,gun:-5,pistol:-4}[f.qb],kind:'QB',side:'O'});
+  f.pl.forEach(([lab,x,y,k])=>ps.push({id:lab,label:lab,x:(x*m)||0,y,kind:k,side:'O'}));
+  const ov=card.off.ov||{};
+  ps.forEach(p=>{const o=ov[p.id]; if(!o) return; if(o.x!=null){p.x=o.x;p.y=o.y;p.moved=true} if(o.label!=null){p.label=o.label;p.moved=true}});
+  return {ps,m,f};
+}
+const isBackPos=p=>p.y<-2.6&&Math.abs(p.x)<5;
+function classify(ps){
+  const elig=ps.filter(p=>p.kind!=='OL'&&p.kind!=='QB');
+  const backs=elig.filter(isBackPos).sort((a,b)=>b.y-a.y);
+  const rec=elig.filter(p=>!isBackPos(p));
+  const R=rec.filter(p=>p.x>0), L=rec.filter(p=>p.x<=0);
+  let s=R.length>L.length?1:L.length>R.length?-1:0;
+  if(!s){const te=rec.find(p=>p.kind==='TE'); s=te?(Math.sign(te.x)||1):1;}
+  const sideList=sg=>(sg>0?R:L).slice().sort((a,b)=>Math.abs(b.x)-Math.abs(a.x));
+  const S=sideList(s), W=sideList(-s);
+  ps.forEach(p=>delete p.role);
+  S.forEach((p,i)=>p.role='S'+(i+1)); W.forEach((p,i)=>p.role='W'+(i+1)); backs.forEach((p,i)=>p.role='B'+(i+1));
+  return {s,S,W,backs,rec,elig};
+}
+function offAssign(ps,cls,playId,m,f){
+  const P=PLAYS[playId]||PLAYS.none;
+  const pullIds=(P.pull||[]).map(k=>k==='BG'?(m>0?'LG':'RG'):(m>0?'LT':'RT'));
+  const carrier=cls.backs.length?cls.backs[cls.backs.length-1]:ps.find(q=>q.kind==='QB');
+  ps.forEach(p=>{
+    let a='none';
+    if(P.type==='pass'){
+      if(p.kind==='OL') a='pro';
+      else if(p.kind==='QB') a=f.qb==='uc'?'drop':'none';
+      else if(p.role&&p.role[0]==='B') a=(cls.backs.length>1&&p.role==='B1')?'pro':(P.map.B||'pro');
+      else a=P.map[p.role]||'go';
+    } else if(P.type==='run'){
+      if(p===carrier) a='run';
+      else if(p.kind==='OL') a=pullIds.includes(p.id)?'pull':'block';
+      else if(p.kind==='QB') a='none';
+      else if(p.role&&p.role[0]==='B') a='lead';
+      else a='block';
+    }
+    p.asg=a;
+  });
+}
+function offPath(p,a,ctx){
+  if(!a||a==='none') return null;
+  const m=ctx.m, run=ctx.play.type==='run'?ctx.play.run:null, st=[p.x,p.y];
+  const isB=p.role&&p.role[0]==='B';
+  if(ROUTES[a]){
+    const o=Math.sign(p.x)||(isB?m:ctx.s);
+    let base=st; const pts=[st];
+    if(isB&&a!=='swing'){base=[clampX(p.x+o*1.5),-0.4]; pts.push(base);}
+    ROUTES[a].p.forEach(([dx,dy])=>pts.push([clampX(base[0]+dx*o),Math.min(19.5,base[1]+dy)]));
+    return {pts,end:'arrow'};
+  }
+  const inline=p.kind==='OL'||p.kind==='TE';
+  if(a==='block'){ if(inline||p.kind==='QB') return {pts:[st,[p.x+m*0.7,p.y+1.5]],end:'bar'}; return {pts:[st,[p.x-(Math.sign(p.x)||1)*0.4,p.y+2.4]],end:'bar'}; }
+  if(a==='pro'){ if(isB) return {pts:[st,[p.x*0.5,p.y+1.6]],end:'bar'}; return {pts:[st,[p.x,p.y-1.1]],end:'bar'}; }
+  if(a==='drop') return {pts:[st,[p.x,p.y-5]],end:'arrow',dash:'dash'};
+  if(a==='pull'){
+    const kick=run==='counter'&&p.id.endsWith('G');
+    return kick?{pts:[st,[p.x,-2.2],[m*6,-2.2],[m*6.6,0.2]],end:'bar'}:{pts:[st,[p.x,-2.3],[m*3.4,-2.3],[m*3.4,1.4]],end:'bar'};
+  }
+  if(a==='lead'){
+    if(run==='power') return {pts:[st,[m*6.4,0]],end:'bar'};
+    if(run==='oz') return {pts:[st,[m*7,-1],[m*8,1]],end:'bar'};
+    return {pts:[st,[m*2,-0.6],[m*2,1.5]],end:'bar'};
+  }
+  if(a==='run'){
+    if(run==='oz') return {pts:[st,[m*6,-2.4],[m*8.5,0.5],[m*8.5,4.5]],end:'arrow',heavy:true};
+    if(run==='power') return {pts:[st,[m*1.2,p.y+1.6],[m*3.2,-0.8],[m*3.2,4]],end:'arrow',heavy:true};
+    if(run==='counter') return {pts:[st,[p.x-m*1.2,p.y-0.2],[m*3.6,-0.8],[m*3.6,4]],end:'arrow',heavy:true};
+    if(run==='iz') return {pts:[st,[m*1.6,-1.2],[m*1.8,4]],end:'arrow',heavy:true};
+    return {pts:[st,[p.x,4]],end:'arrow',heavy:true};
+  }
+  return null;
+}
+
+function buildDefense(card,cls){
+  const s=cls.s, S=cls.S, Wk=cls.W, fid=FRONTS[card.def.front]?card.def.front:'425';
+  const teOn=sg=>cls.rec.find(p=>p.kind==='TE'&&(Math.sign(p.x)===sg)&&Math.abs(p.x)<9.5&&p.y>-2.3);
+  const T={'0':0,'1':1,'2i':1.5,'2':2,'3':3,'4i':3.5,'4':4,'5':5};
+  const t=(k,sg)=>{ if(k in T) return sg*T[k]||0; const te=teOn(sg);
+    if(k==='6') return te?te.x:sg*6; if(k==='7') return te?te.x-sg*0.9:sg*5.6; if(k==='9') return te?te.x+sg*1.6:sg*7; return 0; };
+  const apex=sg=>{ const te=teOn(sg); if(te) return te.x+sg*1.8; const L=sg===s?S:Wk;
+    const r2=L[1]; if(r2&&Math.abs(r2.x)>6.5) return (sg*5+r2.x)/2;
+    if(L[0]&&Math.abs(L[0].x)>9) return sg*Math.min(9,(5+Math.abs(L[0].x))/2); return sg*7.5; };
+  const front={
+    '43over':[['ES','E','DL',t('5',s),1],['TS','T','DL',t('3',s),1],['NW','N','DL',t('1',-s),1],['EW','E','DL',t('5',-s),1],['S','S','LB',apex(s),4],['M','M','LB',s*1,4.8],['W','W','LB',-s*3.5,4.8]],
+    '43under':[['ES','E','DL',t('5',s),1],['NS','N','DL',t('1',s),1],['TW','T','DL',t('3',-s),1],['EW','E','DL',t('5',-s),1],['S','S','LB',t('9',s),1],['M','M','LB',-s*1,4.8],['W','W','LB',-s*4,4.8]],
+    '34':[['ES','E','DL',t('4i',s),1],['N','N','DL',0,1],['EW','E','DL',t('4i',-s),1],['S','S','LB',t('9',s),1],['M','M','LB',s*2,4.8],['B','B','LB',-s*2,4.8],['W','W','LB',t('9',-s),1]],
+    '44':[['ES','E','DL',t('5',s),1],['TS','T','DL',t('2',s),1],['TW','T','DL',t('2',-s),1],['EW','E','DL',t('5',-s),1],['S','S','LB',apex(s),3.5],['M','M','LB',s*2,4.8],['B','B','LB',-s*2,4.8],['W','W','LB',apex(-s),3.5]],
+    '425':[['ES','E','DL',t('5',s),1],['TS','T','DL',t('3',s),1],['NW','N','DL',t('1',-s),1],['EW','E','DL',t('5',-s),1],['M','M','LB',s*2,4.8],['W','W','LB',-s*2,4.8]],
+    '335':[['ES','E','DL',t('5',s),1],['N','N','DL',0,1],['EW','E','DL',t('5',-s),1],['S','S','LB',s*5,4.6],['M','M','LB',0,4.6],['W','W','LB',-s*5,4.6]],
+  }[fid];
+  const D=front.map(([id,label,kind,x,y])=>({id,label,kind,x:x||0,y,side:'D'}));
+  const r1S=S[0], r1W=Wk[0], r2S=S[1], r2W=Wk[1];
+  const DBL={CS:'C',CW:'C',FS:'FS',SS:'SS',NB:'NB',WS:'WS'};
+  FRONTS[fid].db.forEach(id=>D.push({id,label:DBL[id],kind:'DB',x:0,y:7,side:'D'}));
+  const g=id=>D.find(d=>d.id===id);
+  const set=(id,x,y,a)=>{const d=g(id); if(!d) return; if(x!=null){d.x=x;d.y=y;} if(a) d.asg=a;};
+  const cx=(r,sg)=>!r?sg*13:Math.abs(r.x)>=9?r.x+sg*0.8:r.x+sg*4;
+  set('CS',cx(r1S,s),7); set('CW',cx(r1W,-s),7); set('FS',-s*4,12); set('SS',s*4,12);
+  set('NB',r2S&&Math.abs(r2S.x)>6.5?r2S.x-s*0.6:apex(s),5); set('WS',r2W&&Math.abs(r2W.x)>6.5?r2W.x+s*0.6:apex(-s),5);
+  D.forEach(d=>{d.asg=d.kind==='DL'?'rush':'none';});
+  const lbs=D.filter(d=>d.kind==='LB');
+  const under=ids=>lbs.concat(ids.map(g).filter(Boolean));
+  const UND={c3:{3:['cfS','hookM','cfW'],4:['cfS','hookS','hookW','cfW']},
+    c2:{2:['hookS','hookW'],3:['curlS','hookM','curlW'],4:['curlS','hookS','hookW','curlW']},
+    c4:{2:['cfS','cfW'],3:['cfS','hookM','cfW'],4:['cfS','hookS','hookW','cfW']},
+    c6:{2:['cfS','hookW'],3:['cfS','hookM','curlW'],4:['cfS','hookS','hookW','curlW']}};
+  const zonePool=(pool,fam)=>{
+    if(pool.length>4){ const ex=pool.slice().sort((a,b)=>(a.y-b.y)||(s*a.x-s*b.x)).slice(0,pool.length-4); ex.forEach(d=>d.asg='blitz'); pool=pool.filter(d=>!ex.includes(d)); }
+    const zs=UND[fam][pool.length]||(pool.length===1?['hookM']:[]);
+    pool.sort((a,b)=>s*b.x-s*a.x).forEach((d,i)=>{ if(zs[i]) d.asg='z:'+zs[i]; });
+  };
+  const cov=card.def.cov;
+  if(cov==='c3'){ set('CS',null,null,'z:d3S'); set('CW',null,null,'z:d3W'); set('FS',0,12,'z:d3M'); set('SS',apex(s),7); zonePool(under(['SS','NB','WS']),'c3'); }
+  else if(cov==='c2'||cov==='tampa'){
+    set('CS',cx(r1S,s),4.5,'z:flatS'); set('CW',cx(r1W,-s),4.5,'z:flatW'); set('FS',-s*10,12,'z:d2W'); set('SS',s*10,12,'z:d2S');
+    let pool=under(['NB','WS']);
+    if(cov==='tampa'){ const mk=lbs.slice().sort((a,b)=>Math.abs(a.x)-Math.abs(b.x))[0]; if(mk){mk.asg='z:tampa'; pool=pool.filter(d=>d!==mk);} }
+    zonePool(pool,'c2');
+  }
+  else if(cov==='c4'){ set('CS',null,null,'z:q4OS'); set('CW',null,null,'z:q4OW'); set('SS',s*7,10,'z:q4IS'); set('FS',-s*7,10,'z:q4IW'); zonePool(under(['NB','WS']),'c4'); }
+  else if(cov==='c6'){ set('CS',null,null,'z:q4OS'); set('SS',s*7,10,'z:q4IS'); set('FS',-s*10,12,'z:d2W'); set('CW',cx(r1W,-s),4.5,'z:flatW'); zonePool(under(['NB','WS']),'c6'); }
+  else { // man: c1 keeps a free safety, c0 sends everyone left over
+    const freeFS=cov==='c1'; const cand=D.filter(d=>d.kind!=='DL'); const used=new Set(), covered=new Set();
+    const assign=(d,t)=>{d.asg='m:'+t.id; used.add(d); covered.add(t);};
+    const cs=g('CS'), cw=g('CW');
+    if(cs&&r1S){assign(cs,r1S); cs.x=r1S.x-s*0.6; cs.y=Math.abs(r1S.x)>=9?1.5:3;}
+    if(cw&&r1W){assign(cw,r1W); cw.x=r1W.x+s*0.6; cw.y=Math.abs(r1W.x)>=9?1.5:3;}
+    const fs=g('FS'); if(freeFS&&fs){fs.x=0;fs.y=13;fs.asg='z:d1';used.add(fs);}
+    const rest=cls.elig.filter(t=>!covered.has(t)).sort((a,b)=>{const ab=isBackPos(a),bb=isBackPos(b); if(ab!==bb) return ab?1:-1; return Math.abs(b.x)-Math.abs(a.x);});
+    rest.forEach(t=>{ const tb=isBackPos(t); let best=null,bd=1e9;
+      cand.forEach(d=>{ if(used.has(d)) return; let dist=Math.hypot(d.x-t.x,d.y-t.y); if(tb&&d.kind==='DB') dist+=8; if(!tb&&Math.abs(t.x)>9&&d.kind==='LB') dist+=10; if(dist<bd){bd=dist;best=d;} });
+      if(best){ assign(best,t); if(best.kind==='DB'){ best.x=t.x-(Math.sign(t.x)||1)*0.7; best.y=Math.abs(t.x)>9?1.5:4.5; } } });
+    cand.filter(d=>!used.has(d)).sort((a,b)=>Math.abs(a.x)-Math.abs(b.x)).forEach((d,i)=>{ d.asg=(freeFS&&i===0)?'z:rat':'blitz'; });
+  }
+  const ov=card.def.ov||{};
+  D.forEach(d=>{const o=ov[d.id]; if(!o) return; if(o.x!=null){d.x=o.x;d.y=o.y;d.moved=true} if(o.label!=null){d.label=o.label;d.moved=true} if(o.asg){d.asg=o.asg;d.moved=true}});
+  return D;
+}
+function defPath(d,offPs,s,zones){
+  const a=d.asg; if(!a||a==='none') return null; const st=[d.x,d.y];
+  if(a==='rush') return {pts:[st,[d.x*0.8,-1.5]],end:'arrow'};
+  if(a==='blitz'){ const gaps=[-7,-5,-3,-1,1,3,5,7]; const gp=gaps.reduce((b,x)=>Math.abs(x-d.x)<Math.abs(b-d.x)?x:b); return {pts:[st,[gp,0.3],[gp*0.4,-3]],end:'arrow'}; }
+  if(a.startsWith('z:')){ const k=a.slice(2), z=zoneGeom(k,s); if(!z) return null; if(!zones.find(q=>q.key===k)) zones.push({key:k,...z}); return {pts:[st,[z.x,z.y-z.h/2+1.5]],end:'arrow',dash:'dash'}; }
+  if(a.startsWith('m:')){ const t=offPs.find(p=>p.id===a.slice(2)); if(!t) return null; return {pts:[st,[t.x,t.y+0.9]],end:'none',dash:'dot'}; }
+  return null;
+}
+function compute(card){
+  const O=buildOffense(card); const cls=classify(O.ps);
+  offAssign(O.ps,cls,card.off.play,O.m,O.f);
+  const ovO=card.off.ov||{}; O.ps.forEach(p=>{const o=ovO[p.id]; if(o&&o.asg){p.asg=o.asg;p.moved=true;}});
+  const play=PLAYS[card.off.play]||PLAYS.none;
+  O.ps.forEach(p=>p.path=offPath(p,p.asg,{m:O.m,s:cls.s,play}));
+  const D=buildDefense(card,cls); const zones=[];
+  D.forEach(d=>d.path=defPath(d,O.ps,cls.s,zones));
+  return {off:O.ps,def:D,zones,s:cls.s,m:O.m,f:O.f,cls};
+}
+
+/* ===================== Drawing ===================== */
+const PAL={
+ screen:{name:'s',field:'#0e1815',line:'rgba(220,235,228,.08)',los:'rgba(220,235,228,.55)',hash:'rgba(220,235,228,.2)',depth:'rgba(220,235,228,.32)',
+   off:'#8db7ff',offFill:'#122130',offText:'#dce8ff',ol:'#6f86a8',def:'#f2a27c',defText:'#ffd9c6',zone:'#f2a27c',zoneOp:.08,zoneText:'rgba(242,162,124,.75)',sel:'#ffffff',moved:'#ffd27a',halo:'#0e1815'},
+ print:{name:'p',field:'#ffffff',line:'#dcdcdc',los:'#111111',hash:'#c4c4c4',depth:'#9a9a9a',
+   off:'#111111',offFill:'#ffffff',offText:'#111111',ol:'#111111',def:'#111111',defText:'#111111',zone:'#000000',zoneOp:.06,zoneText:'#555555',sel:'#111111',moved:'#111111',halo:'#ffffff'}
+};
+const FONT='Barlow Condensed, Arial Narrow, Arial, sans-serif';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const f1=n=>(Math.round(n*10)/10).toString();
+
+function drawField(model,o){
+  const P=o.print?PAL.print:PAL.screen, yMin=o.yMin??YMIN, yMax=o.yMax??YMAX, mini=!!o.mini;
+  const W=2*HALF*U+2*PAD, H=(yMax-yMin)*U+2*PAD;
+  const T=(x,y)=>[(x+HALF)*U+PAD, o.flip?(y-yMin)*U+PAD:(yMax-y)*U+PAD];
+  const sw=mini?2.4:1;
+  let s=`<defs>`;
+  [['O',P.off],['D',P.def]].forEach(([k,c])=>s+=`<marker id="a${k}${P.name}" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="${mini?3:5}" markerHeight="${mini?3:5}" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${c}"/></marker>`);
+  s+=`</defs>`;
+  s+=`<rect x="${PAD}" y="${PAD}" width="${2*HALF*U}" height="${(yMax-yMin)*U}" fill="${P.field}"/>`;
+  for(let y=Math.ceil(yMin/5)*5;y<=yMax;y+=5){ if(y===0) continue; const sy=T(0,y)[1]; s+=`<line x1="${PAD}" y1="${f1(sy)}" x2="${W-PAD}" y2="${f1(sy)}" stroke="${P.line}" stroke-width="${sw}"/>`; }
+  if(!mini){
+    for(let y=Math.ceil(yMin);y<=Math.floor(yMax);y++){ if(y%5===0) continue; for(const hx of [-8.9,8.9,-HALF+0.4,HALF-0.4]){ const [sx,sy]=T(hx,y); s+=`<line x1="${f1(sx-3)}" y1="${f1(sy)}" x2="${f1(sx+3)}" y2="${f1(sy)}" stroke="${P.hash}" stroke-width="1"/>`; } }
+    for(let y=Math.ceil(yMin/5)*5;y<=yMax;y+=5){ if(y===0) continue; const [sx,sy]=T(-HALF+1.6,y); s+=`<text x="${f1(sx)}" y="${f1(sy-3)}" font-family="${FONT}" font-size="9" fill="${P.depth}" letter-spacing=".5">${y>0?'+':''}${y}</text>`; }
+  }
+  const ly=T(0,0)[1]; s+=`<line x1="${PAD}" y1="${f1(ly)}" x2="${W-PAD}" y2="${f1(ly)}" stroke="${P.los}" stroke-width="${mini?3:1.4}" ${mini?'':'stroke-dasharray="6 4"'}/>`;
+  if(!mini){ const [lx]=T(HALF-2.6,0); s+=`<text x="${f1(lx)}" y="${f1(ly-4)}" font-family="${FONT}" font-size="9" fill="${P.depth}" letter-spacing="1">LOS</text>`; }
+  s+=`<rect x="${PAD}" y="${PAD}" width="${2*HALF*U}" height="${(yMax-yMin)*U}" fill="none" stroke="${P.hash}" stroke-width="${sw}"/>`;
+
+  const showOff=o.showOff!==false, showDef=o.showDef!==false, showPaths=o.showPaths!==false;
+  // zones
+  if(showDef&&showPaths){ model.zones.forEach(z=>{ const [cx,cy]=T(z.x,z.y);
+    s+=`<ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="${f1(z.w/2*U)}" ry="${f1(z.h/2*U)}" fill="${P.zone}" fill-opacity="${P.zoneOp}" stroke="${P.zone}" stroke-opacity="${o.print?.35:.28}" stroke-width="${sw}" stroke-dasharray="4 4"/>`;
+    if(!mini) s+=`<text x="${f1(cx)}" y="${f1(cy+3)}" text-anchor="middle" font-family="${FONT}" font-size="9.5" font-weight="600" letter-spacing="1" fill="${P.zoneText}">${esc(zoneLabelShort(z.key))}</text>`; }); }
+  const pathSvg=(pa,col,mk,side)=>{
+    if(!pa) return ''; const pts=pa.pts.map(p=>T(p[0],p[1]));
+    const d=pts.map((p,i)=>(i?'L':'M')+f1(p[0])+' '+f1(p[1])).join(' ');
+    const dash=pa.dash==='dash'?'stroke-dasharray="7 5"':pa.dash==='dot'?'stroke-dasharray="1.5 4" stroke-linecap="round"':'';
+    const w=(pa.heavy?2.6:1.8)*(mini?2:1);
+    let out=`<path d="${d}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linejoin="round" ${dash} ${pa.end==='arrow'?`marker-end="url(#a${mk}${P.name})"`:''}/>`;
+    if(pa.end==='bar'){ const a=pts[pts.length-2], b=pts[pts.length-1]; const dx=b[0]-a[0], dy=b[1]-a[1], L=Math.hypot(dx,dy)||1; const nx=-dy/L*6, ny=dx/L*6;
+      out+=`<line x1="${f1(b[0]+nx)}" y1="${f1(b[1]+ny)}" x2="${f1(b[0]-nx)}" y2="${f1(b[1]-ny)}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`; }
+    return out;
+  };
+  if(showPaths){ if(showDef) model.def.forEach(d=>s+=pathSvg(d.path,P.def,'D')); if(showOff) model.off.forEach(p=>s+=pathSvg(p.path,P.off,'O')); }
+  const r=mini?13:8.5;
+  if(showDef) model.def.forEach(d=>{ const [x,y]=T(d.x,d.y); const key='D:'+d.id, sel=o.sel===key;
+    s+=`<g class="pl" data-key="${key}" transform="translate(${f1(x)},${f1(y)})">`;
+    s+=`<circle r="${r+3}" fill="transparent"/>`;
+    if(sel) s+=`<circle r="${r+3}" fill="none" stroke="${P.sel}" stroke-width="1.5"/>`;
+    if(d.moved&&!mini) s+=`<circle r="${r+1}" fill="none" stroke="${P.moved}" stroke-width="1.3" stroke-dasharray="3 3"/>`;
+    if(mini) s+=`<text y="9" text-anchor="middle" font-family="${FONT}" font-weight="700" font-size="28" fill="${P.defText}">${esc(d.label)}</text>`;
+    else s+=`<text y="${d.label.length>1?4:4.6}" text-anchor="middle" font-family="${FONT}" font-weight="700" font-size="${d.label.length>1?11:13.5}" fill="${P.defText}" stroke="${P.halo}" stroke-width="3" paint-order="stroke">${esc(d.label)}</text>`;
+    s+=`</g>`; });
+  if(showOff) model.off.forEach(p=>{ const [x,y]=T(p.x,p.y); const key='O:'+p.id, sel=o.sel===key;
+    s+=`<g class="pl" data-key="${key}" transform="translate(${f1(x)},${f1(y)})">`;
+    if(p.kind==='OL'){ const h=mini?11:7.5; s+=`<rect x="${-h}" y="${-h}" width="${2*h}" height="${2*h}" rx="${mini?3:2.2}" fill="${P.offFill}" stroke="${P.ol}" stroke-width="${mini?2.6:1.4}"/>`; }
+    else s+=`<circle r="${r}" fill="${P.offFill}" stroke="${P.off}" stroke-width="${mini?2.6:1.5}"/>`;
+    if(sel) s+=`<circle r="${r+4}" fill="none" stroke="${P.sel}" stroke-width="1.5"/>`;
+    if(p.moved&&!mini) s+=`<circle r="${r+3.5}" fill="none" stroke="${P.moved}" stroke-width="1.3" stroke-dasharray="3 3"/>`;
+    if(!mini&&p.label) s+=`<text y="${p.label.length>1?3.4:4}" text-anchor="middle" font-family="${FONT}" font-weight="700" font-size="${p.label.length>1?8.5:11}" fill="${P.offText}">${esc(p.label)}</text>`;
+    s+=`</g>`; });
+  return {s,W,H};
+}
+function zoneLabelShort(k){ const g=ZFIX[k]||ZBASE[k.slice(0,-1)]; return g?g.n.toUpperCase():k; }
+function svgCard(model,o){ const {s,W,H}=drawField(model,o); return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" ${o.mini?'':'preserveAspectRatio="xMidYMid meet"'}>${s}</svg>`; }
+
+/* ===================== Labels + CSV ===================== */
+const formLabel=c=>{const f=FORM_BY[c.off.form]; return f?`${f.name} ${c.off.strength==='L'?'Lt':'Rt'}`:'';};
+const persOf=c=>(FORM_BY[c.off.form]||{}).pers||'';
+const playLabel=c=>{const p=PLAYS[c.off.play]; return p&&c.off.play!=='none'?p.n:'';};
+const situ=c=>c.down?`${['','1st','2nd','3rd','4th'][+c.down]} & ${c.dist||'?'}`:'';
+function blitzers(c){ try{ return compute(c).def.filter(d=>d.asg==='blitz').map(d=>d.label).join(' '); }catch(e){ return ''; } }
+function toCSV(cards){
+  const cols=['PLAY #','ODK','DN','DIST','PERSONNEL','OFF FORM','OFF STR','OFF PLAY','DEF FRONT','COVERAGE','BLITZ','OPPONENT','NOTES'];
+  const q=v=>{v=String(v??''); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const rows=cards.map(c=>[c.num,c.odk,c.down,c.dist,persOf(c),(FORM_BY[c.off.form]||{}).name||'',c.off.strength,playLabel(c),(FRONTS[c.def.front]||{}).n||'',COV_NAME[c.def.cov]||'',blitzers(c),c.opponent,c.notes]);
+  return [cols,...rows].map(r=>r.map(q).join(',')).join('\n');
+}
+</script>
+
+<script>
+/* ===================== App state + UI ===================== */
+const KEY='chalk-scout-cards-v1';
+const uid=()=>'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const blankCard=(num,opp)=>({id:uid(),num,opponent:opp||'',odk:'O',down:'1',dist:'10',notes:'',
+  off:{form:'11-trips',strength:'R',play:'none',ov:{}},def:{front:'425',cov:'c3',ov:{}}});
+function seed(){
+  const opp='Example: Rival HS';
+  const a={id:uid(),num:1,opponent:opp,odk:'O',down:'3',dist:'6',notes:'H runs the drag at 5. Mike: wall the mesh.',off:{form:'11-trips',strength:'R',play:'mesh',ov:{}},def:{front:'425',cov:'c3',ov:{}}};
+  const b={id:uid(),num:2,opponent:opp,odk:'O',down:'1',dist:'10',notes:'Their FB cheats wide on Power. Watch the pulling guard.',off:{form:'21-offset',strength:'R',play:'power',ov:{F:{x:2.8,y:-4.6}}},def:{front:'43over',cov:'c1',ov:{}}};
+  const c={id:uid(),num:3,opponent:opp,odk:'D',down:'2',dist:'8',notes:'Their Mike walks up into the A gap on 2nd & long.',off:{form:'10-bunch',strength:'L',play:'stick',ov:{}},def:{front:'335',cov:'c2',ov:{M:{x:0.5,y:1.6,asg:'blitz'}}}};
+  return {cards:[a,b,c],current:JSON.parse(JSON.stringify(a)),flip:false};
+}
+let store; try{ store=JSON.parse(localStorage.getItem(KEY)); }catch(e){ store=null; }
+if(!store||!Array.isArray(store.cards)||!store.current) store=seed();
+let card=store.current;
+const ui={flip:!!store.flip,pers:'all',pop:null,sel:null,overlay:null,confirmDel:null};
+let dirty=!store.cards.some(c=>JSON.stringify(c)===JSON.stringify(card));
+let model=null;
+
+const $=s=>document.querySelector(s);
+function persist(){ try{ localStorage.setItem(KEY,JSON.stringify({cards:store.cards,current:card,flip:ui.flip})); }catch(e){} }
+function markDirty(){ dirty=true; $('#dirty').hidden=false; persist(); }
+function toast(msg){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),1800); }
+
+/* --- card --- */
+function renderCard(){
+  model=compute(card);
+  $('#card').innerHTML=svgCard(model,{flip:ui.flip,sel:ui.sel});
+}
+/* --- strips --- */
+function miniOffense(formId){ const c={...card,off:{form:formId,strength:card.off.strength,play:'none',ov:{}},def:{front:'425',cov:'c3',ov:{}}}; return svgCard(compute(c),{mini:true,showDef:false,showPaths:false,yMin:-8.5,yMax:2.5}); }
+function miniPlay(pid){ const c={...card,off:{...card.off,play:pid,ov:{}},def:{front:'425',cov:'c3',ov:{}}}; return svgCard(compute(c),{mini:true,showDef:false,yMin:-8.5,yMax:19}); }
+function miniFront(fid){ const c={...card,off:{...card.off,play:'none'},def:{front:fid,cov:card.def.cov,ov:{}}}; return svgCard(compute(c),{mini:true,showPaths:false,yMin:-3,yMax:14}); }
+const pressed=b=>`aria-pressed="${b?'true':'false'}"`;
+function renderStrips(){
+  const offTop=ui.flip;
+  const so=$('#stripOff'), sd=$('#stripDef');
+  so.classList.toggle('at-top',offTop); so.classList.toggle('at-bottom',!offTop);
+  sd.classList.toggle('at-top',!offTop); sd.classList.toggle('at-bottom',offTop);
+  $('#app').classList.toggle('flip',ui.flip);
+  const f=FORM_BY[card.off.form], P=PLAYS[card.off.play]||PLAYS.none;
+  const offTweaks=Object.keys(card.off.ov||{}).length, defTweaks=Object.keys(card.def.ov||{}).length;
+  let h=`<span class="side-tag">Offense</span>
+   <div class="grp"><label>Personnel</label><div class="seg">${['all',...PERS_ORDER].map(p=>`<button data-act="pers" data-v="${p}" ${pressed(ui.pers===p)}>${p==='all'?'All':p}</button>`).join('')}</div></div>
+   <div class="grp"><label>Formation</label><button class="pick" data-act="pop" data-v="form">${esc(f.name)} <small>${f.pers}</small></button></div>
+   <div class="grp"><label>Strength</label><div class="seg words"><button data-act="str" data-v="L" ${pressed(card.off.strength==='L')}>Left</button><button data-act="str" data-v="R" ${pressed(card.off.strength==='R')}>Right</button></div></div>
+   <div class="grp"><label>Play</label><button class="pick" data-act="pop" data-v="play">${esc(P.n)}${P.type!=='none'?` <small>${P.type}</small>`:''}</button></div>
+   <span class="spacer"></span>${offTweaks?`<button class="ghost" data-act="resetOff">Reset ${offTweaks} adjustment${offTweaks>1?'s':''}</button>`:''}`;
+  if(ui.pop==='form'){
+    const list=FORMS.filter(x=>ui.pers==='all'||x.pers===ui.pers); const groups=PERS_ORDER.filter(p=>list.some(x=>x.pers===p));
+    h+=`<div class="pop" role="dialog" aria-label="Formations">${groups.map(p=>`<h4>${p} personnel</h4><div class="tiles">${list.filter(x=>x.pers===p).map(x=>`<button class="tile" data-act="setForm" data-v="${x.id}" ${pressed(x.id===card.off.form)}>${miniOffense(x.id)}<span class="tn">${esc(x.name)}</span><span class="tp">${x.pers} · ${x.qb==='uc'?'Under center':x.qb==='gun'?'Shotgun':'Pistol'}</span></button>`).join('')}</div>`).join('')||'<p class="empty">No formations in this personnel group yet.</p>'}</div>`;
+  }
+  if(ui.pop==='play'){
+    const tile=id=>`<button class="tile" data-act="setPlay" data-v="${id}" ${pressed(id===card.off.play)}>${miniPlay(id)}<span class="tn">${esc(PLAYS[id].n)}</span></button>`;
+    h+=`<div class="pop" role="dialog" aria-label="Plays"><h4>Pass concepts · drawn on ${esc(f.name)}</h4><div class="tiles">${PASS_IDS.map(tile).join('')}</div><h4>Runs</h4><div class="tiles">${RUN_IDS.map(tile).join('')}${tile('none')}</div></div>`;
+  }
+  so.innerHTML=h;
+  const strongTxt=model?(model.s>0?'Right':'Left'):'';
+  let d=`<span class="side-tag">Defense</span>
+   <div class="grp"><label>Front</label><button class="pick" data-act="pop" data-v="front">${esc(FRONTS[card.def.front].n)}</button></div>
+   <div class="grp"><label>Coverage</label><div class="seg words">${COVS.map(([k,n])=>`<button data-act="cov" data-v="${k}" ${pressed(card.def.cov===k)}>${n}</button>`).join('')}</div></div>
+   <span class="readout">Aligned to strength: ${strongTxt}</span>
+   <span class="spacer"></span>${defTweaks?`<button class="ghost" data-act="resetDef">Reset ${defTweaks} adjustment${defTweaks>1?'s':''}</button>`:''}`;
+  if(ui.pop==='front'){
+    d+=`<div class="pop" role="dialog" aria-label="Fronts"><h4>Fronts · aligned to ${esc(f.name)}</h4><div class="tiles">${FRONT_IDS.map(id=>`<button class="tile" data-act="setFront" data-v="${id}" ${pressed(id===card.def.front)}>${miniFront(id)}<span class="tn">${esc(FRONTS[id].n)}</span><span class="tp">${FRONTS[id].db.length} DB</span></button>`).join('')}</div></div>`;
+  }
+  sd.innerHTML=d;
+}
+/* --- meta --- */
+function renderMeta(){
+  $('#mNum').value=card.num; $('#mOpp').value=card.opponent; $('#mDown').value=card.down; $('#mDist').value=card.dist; $('#mNotes').value=card.notes;
+  document.querySelectorAll('#odkSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===card.odk));
+  $('#dirty').hidden=!dirty;
+  $('#libBtn').textContent=`Library (${store.cards.length})`;
+}
+/* --- inspector --- */
+const KIND={OL:'Offensive line',QB:'Quarterback',WR:'Receiver',TE:'Tight end',RB:'Running back',FB:'Fullback',DL:'Defensive line',LB:'Linebacker',DB:'Defensive back'};
+const ROLE=r=>!r?'':r[0]==='B'?'Backfield':`#${r.slice(1)} ${r[0]==='S'?'strong':'weak'} side`;
+function asgOptions(p){
+  if(p.side==='O'){
+    if(p.kind==='OL') return [['none','No assignment'],['block','Run block'],['pro','Pass pro'],['pull','Pull']];
+    if(p.kind==='QB') return [['none','No assignment'],['drop','Drop back'],['run','Ball carrier'],['block','Block']];
+    return [['none','No assignment'],...Object.entries(ROUTES).map(([k,v])=>[k,'Route: '+v.n]),['block','Block'],['pro','Pass pro'],['run','Ball carrier'],['lead','Lead block']];
+  }
+  return [['none','No assignment'],['rush','Rush'],['blitz','Blitz'],...ZONE_KEYS.map(k=>['z:'+k,'Zone: '+zoneLabel(k)]),...model.off.filter(q=>q.kind!=='OL').map(q=>['m:'+q.id,'Man: '+(q.label||q.id)])];
+}
+function renderInspector(){
+  const el=$('#insp');
+  if(!ui.sel||!model){el.hidden=true;return;}
+  const [side,id]=ui.sel.split(':'); const p=(side==='O'?model.off:model.def).find(q=>q.id===id);
+  if(!p){ui.sel=null;el.hidden=true;return;}
+  const opts=asgOptions(p);
+  el.innerHTML=`<div class="insp-h"><span class="tag ${side}">${side==='O'?'Offense':'Defense'}</span><b>${esc(p.label||p.id)}</b><button class="x" data-act="desel" aria-label="Close">×</button></div>
+   <div class="sub">${KIND[p.kind]||''}${p.role?' · '+ROLE(p.role):''}</div>
+   <label for="inspLabel">Label<input id="inspLabel" maxlength="3" value="${esc(p.label)}" placeholder="${esc(p.id)}"></label>
+   <label for="inspAsg">Assignment<select id="inspAsg">${opts.map(([v,n])=>`<option value="${esc(v)}" ${v===p.asg?'selected':''}>${esc(n)}</option>`).join('')}</select></label>
+   <p class="hint">Drag on the card to move. Arrow keys nudge half a yard. Changes save as this team's version.</p>
+   ${p.moved?`<button class="btn" data-act="resetPlayer">Reset to standard</button>`:''}`;
+  el.hidden=false;
+}
+function setOv(key,patch){ const [side,id]=key.split(':'); const box=side==='O'?card.off:card.def; box.ov=box.ov||{}; box.ov[id]={...(box.ov[id]||{}),...patch}; markDirty(); }
+function renderAll(){ renderCard(); renderStrips(); renderMeta(); renderInspector(); }
+
+/* --- overlays --- */
+function closeOverlay(){ ui.overlay=null; ui.confirmDel=null; $('#overlay').innerHTML=''; }
+function renderLibrary(){
+  const groups={}; store.cards.forEach(c=>{(groups[c.opponent||'No opponent']=groups[c.opponent||'No opponent']||[]).push(c);});
+  const names=Object.keys(groups).sort();
+  $('#overlay').innerHTML=`<div class="scrim" data-act="close"></div><aside class="drawer" role="dialog" aria-label="Card library">
+   <div class="dh"><h2>Library</h2><button class="x" data-act="close" aria-label="Close">×</button></div>
+   <p class="empty" style="margin:0">Saved in this browser. Use Export to pass cards to a teammate.</p>
+   ${names.length?names.map(n=>`<div class="opp"><h3>${esc(n)}</h3>${groups[n].sort((a,b)=>a.num-b.num).map(c=>`
+     <div class="lib-item ${c.id===card.id?'cur':''}"><span class="num">#${esc(c.num)}</span>
+      <div class="bd"><div class="t1">${esc(formLabel(c))}${playLabel(c)?' · '+esc(playLabel(c)):''}</div><div class="t2">${esc(situ(c))}${situ(c)?' · ':''}${esc(FRONTS[c.def.front]?.n||'')} ${esc(COV_NAME[c.def.cov]||'')}</div></div>
+      ${ui.confirmDel===c.id?`<button class="mini-btn danger" data-act="delYes" data-v="${c.id}">Delete</button><button class="mini-btn" data-act="delNo">Keep</button>`:
+      `<button class="mini-btn" data-act="load" data-v="${c.id}">Open</button><button class="mini-btn" data-act="dup" data-v="${c.id}">Copy</button><button class="mini-btn danger" data-act="del" data-v="${c.id}" aria-label="Delete card ${esc(c.num)}">✕</button>`}
+     </div>`).join('')}</div>`).join(''):'<p class="empty">No saved cards yet. Build a card and press Save card.</p>'}
+  </aside>`;
+}
+function printSVG(c,m){
+  const fld=drawField(m,{print:true,flip:ui.flip});
+  const W=fld.W, top=78, bottom=c.notes?44:16, H=top+fld.H+bottom;
+  const opp=(c.opponent||'Opponent').toUpperCase(), side=c.odk==='D'?'DEFENSE':'OFFENSE';
+  const offL=`OFFENSE  ${persOf(c)} · ${formLabel(c)}${playLabel(c)?' · '+playLabel(c):''}`;
+  const defL=`DEFENSE  ${(FRONTS[c.def.front]||{}).n||''} · ${COV_NAME[c.def.cov]||''}`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">
+   <rect width="${W}" height="${H}" fill="#fff"/>
+   <text x="${PAD}" y="34" font-family="${FONT}" font-weight="700" font-size="28" fill="#111">CARD ${esc(c.num)}${situ(c)?'  ·  '+esc(situ(c).toUpperCase()):''}</text>
+   <text x="${W-PAD}" y="34" text-anchor="end" font-family="${FONT}" font-weight="700" font-size="15" fill="#111" letter-spacing="1">${esc(opp)} ${side}</text>
+   <text x="${PAD}" y="58" font-family="${FONT}" font-weight="600" font-size="13" fill="#333" letter-spacing=".5">${esc(offL)}</text>
+   <text x="${W-PAD}" y="58" text-anchor="end" font-family="${FONT}" font-weight="600" font-size="13" fill="#333" letter-spacing=".5">${esc(defL)}</text>
+   <g transform="translate(0,${top-PAD})">${fld.s}</g>
+   ${c.notes?`<text x="${PAD}" y="${top+fld.H+16}" font-family="${FONT}" font-weight="600" font-size="14" fill="#111">${esc(c.notes)}</text>`:''}
+  </svg>`;
+}
+let pngBlob=null;
+function renderPrint(){
+  const svg=printSVG(card,model);
+  $('#printSheet').innerHTML=svg;
+  $('#overlay').innerHTML=`<div class="scrim" data-act="close"></div><div class="modal" role="dialog" aria-label="Print view">
+   <div class="dh"><h2>Print view</h2><button class="x" data-act="close" aria-label="Close">×</button></div>
+   <p>Ink-friendly version for the scout team. Right-click or long-press the card to save or copy the image, then print it. When this page is opened as a file on your computer, Ctrl+P or Cmd+P prints just the card.</p>
+   <div class="sheet"><img id="pngOut" alt="Printable scout card ${esc(card.num)}"></div>
+   <div class="btn-row"><button class="btn primary" data-act="copyImg">Copy image</button><span class="msg" id="pmsg"></span></div></div>`;
+  const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'})); const img=new Image();
+  img.onload=()=>{ const sc=3, cv=document.createElement('canvas'); cv.width=img.width*sc; cv.height=img.height*sc; const cx=cv.getContext('2d'); cx.scale(sc,sc); cx.drawImage(img,0,0); URL.revokeObjectURL(url);
+    cv.toBlob(b=>{ pngBlob=b; const o=$('#pngOut'); if(o&&b) o.src=URL.createObjectURL(b); },'image/png'); };
+  img.onerror=()=>{ const o=$('#pngOut'); if(o) o.src=url; };
+  img.src=url;
+}
+function renderExport(tab){
+  const cards=store.cards.length?store.cards:[card];
+  const csv=toCSV(cards.slice().sort((a,b)=>(a.opponent||'').localeCompare(b.opponent||'')||a.num-b.num));
+  const json=JSON.stringify({chalkScoutCards:1,cards:store.cards},null,1);
+  $('#overlay').innerHTML=`<div class="scrim" data-act="close"></div><div class="modal" role="dialog" aria-label="Export">
+   <div class="dh"><h2>Export</h2><button class="x" data-act="close" aria-label="Close">×</button></div>
+   <div class="seg words"><button data-act="exTab" data-v="csv" ${pressed(tab==='csv')}>Hudl CSV</button><button data-act="exTab" data-v="json" ${pressed(tab==='json')}>Share cards</button><button data-act="exTab" data-v="import" ${pressed(tab==='import')}>Import</button></div>
+   ${tab==='csv'?`<p>One row per saved card, using Hudl's column names (PLAY #, ODK, DN, DIST, OFF FORM, OFF PLAY, DEF FRONT, COVERAGE, BLITZ). Copy it into a .csv file to import.</p><textarea id="exText" readonly>${esc(csv)}</textarea><div class="btn-row"><button class="btn primary" data-act="copyText">Copy CSV</button><span class="msg" id="xmsg"></span></div>`:''}
+   ${tab==='json'?`<p>Your whole library as text. Send it to a teammate; they paste it under Import.</p><textarea id="exText" readonly>${esc(json)}</textarea><div class="btn-row"><button class="btn primary" data-act="copyText">Copy cards</button><span class="msg" id="xmsg"></span></div>`:''}
+   ${tab==='import'?`<p>Paste cards a teammate shared. They are added to your library; nothing is replaced.</p><textarea id="imText" placeholder='{"chalkScoutCards":1,"cards":[…]}'></textarea><div class="btn-row"><button class="btn primary" data-act="doImport">Add to library</button><span class="msg" id="xmsg"></span></div>`:''}
+  </div>`;
+}
+
+/* --- events --- */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]'); if(!b) return; const a=b.dataset.act, v=b.dataset.v;
+  switch(a){
+    case 'pers': ui.pers=v; ui.pop='form'; renderStrips(); break;
+    case 'pop': ui.pop=ui.pop===v?null:v; renderStrips(); break;
+    case 'setForm': card.off.form=v; card.off.ov={}; ui.pop=null; ui.sel=null; markDirty(); renderAll(); break;
+    case 'str': if(card.off.strength!==v){ card.off.strength=v; card.off.ov={}; ui.sel=null; markDirty(); renderAll(); } break;
+    case 'setPlay': card.off.play=v; Object.values(card.off.ov||{}).forEach(o=>delete o.asg); ui.pop=null; markDirty(); renderAll(); break;
+    case 'setFront': card.def.front=v; card.def.ov={}; ui.pop=null; ui.sel=null; markDirty(); renderAll(); break;
+    case 'cov': card.def.cov=v; markDirty(); renderAll(); break;
+    case 'resetOff': card.off.ov={}; ui.sel=null; markDirty(); renderAll(); break;
+    case 'resetDef': card.def.ov={}; ui.sel=null; markDirty(); renderAll(); break;
+    case 'flip': ui.flip=!ui.flip; ui.pop=null; persist(); renderAll(); break;
+    case 'odk': card.odk=v; markDirty(); renderMeta(); break;
+    case 'desel': ui.sel=null; renderCard(); renderInspector(); break;
+    case 'resetPlayer': { const [side,id]=ui.sel.split(':'); const box=side==='O'?card.off:card.def; if(box.ov) delete box.ov[id]; markDirty(); renderAll(); break; }
+    case 'new': { const n=Math.max(0,...store.cards.filter(c=>c.opponent===card.opponent).map(c=>+c.num||0))+1; card=blankCard(n,card.opponent); dirty=true; ui.sel=null; persist(); renderAll(); toast('New card started'); break; }
+    case 'save': { const i=store.cards.findIndex(c=>c.id===card.id); const copy=JSON.parse(JSON.stringify(card)); if(i>=0) store.cards[i]=copy; else store.cards.push(copy); dirty=false; persist(); renderMeta(); toast(`Card ${card.num} saved${card.opponent?' to '+card.opponent:''}`); break; }
+    case 'lib': ui.overlay='lib'; renderLibrary(); break;
+    case 'close': closeOverlay(); break;
+    case 'load': { const c=store.cards.find(x=>x.id===v); if(c){ card=JSON.parse(JSON.stringify(c)); dirty=false; ui.sel=null; persist(); closeOverlay(); renderAll(); } break; }
+    case 'dup': { const c=store.cards.find(x=>x.id===v); if(c){ const n=Math.max(0,...store.cards.filter(x=>x.opponent===c.opponent).map(x=>+x.num||0))+1; const d=JSON.parse(JSON.stringify(c)); d.id=uid(); d.num=n; store.cards.push(d); persist(); renderLibrary(); renderMeta(); } break; }
+    case 'del': ui.confirmDel=v; renderLibrary(); break;
+    case 'delNo': ui.confirmDel=null; renderLibrary(); break;
+    case 'delYes': store.cards=store.cards.filter(x=>x.id!==v); ui.confirmDel=null; if(card.id===v) dirty=true; persist(); renderLibrary(); renderMeta(); break;
+    case 'print': ui.overlay='print'; renderPrint(); break;
+    case 'copyImg': { const m=$('#pmsg'); if(!pngBlob||!window.ClipboardItem){ m.textContent='Right-click the card and choose Copy image.'; break; }
+      navigator.clipboard.write([new ClipboardItem({'image/png':pngBlob})]).then(()=>m.textContent='Copied. Paste it into a doc to print.').catch(()=>m.textContent='Copy was blocked here. Right-click the card and choose Copy image.'); break; }
+    case 'export': ui.overlay='export'; renderExport('csv'); break;
+    case 'exTab': renderExport(v); break;
+    case 'copyText': { const t=$('#exText'), m=$('#xmsg'); const done=()=>m.textContent='Copied.';
+      const fall=()=>{ t.focus(); t.select(); m.textContent='Selected. Press Ctrl+C or Cmd+C to copy.'; };
+      try{ navigator.clipboard.writeText(t.value).then(done,fall); }catch(err){ fall(); } break; }
+    case 'doImport': { const m=$('#xmsg'); try{ const data=JSON.parse($('#imText').value); const list=Array.isArray(data)?data:data.cards; if(!Array.isArray(list)) throw 0;
+        let n=0; list.forEach(c=>{ if(c&&c.off&&c.def&&FORM_BY[c.off.form]){ c.id=uid(); store.cards.push(c); n++; } }); persist(); renderMeta(); m.textContent=n?`Added ${n} card${n>1?'s':''}.`:'No cards found in that text.'; }
+      catch(err){ m.textContent='That text is not a Chalk card export. Copy it again from Export → Share cards.'; } break; }
+  }
+});
+document.addEventListener('pointerdown',e=>{ if(ui.pop&&!e.target.closest('.pop')&&!e.target.closest('.pick')&&!e.target.closest('[data-act="pers"]')){ ui.pop=null; renderStrips(); } });
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){ if(ui.overlay) closeOverlay(); else if(ui.pop){ui.pop=null;renderStrips();} else if(ui.sel){ui.sel=null;renderCard();renderInspector();} return; }
+  if(!ui.sel||/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) return;
+  const dirs={ArrowLeft:[-0.5,0],ArrowRight:[0.5,0],ArrowUp:[0,ui.flip?-0.5:0.5],ArrowDown:[0,ui.flip?0.5:-0.5]}; const d=dirs[e.key]; if(!d) return;
+  e.preventDefault(); const [side,id]=ui.sel.split(':'); const p=(side==='O'?model.off:model.def).find(q=>q.id===id); if(!p) return;
+  setOv(ui.sel,{x:p.x+d[0],y:p.y+d[1]}); renderCard(); renderInspector(); renderStrips();
+});
+// inspector inputs
+$('#insp').addEventListener('input',e=>{ if(e.target.id==='inspLabel'){ setOv(ui.sel,{label:e.target.value.toUpperCase()}); renderCard(); } });
+$('#insp').addEventListener('change',e=>{ if(e.target.id==='inspAsg'){ setOv(ui.sel,{asg:e.target.value}); renderCard(); renderInspector(); renderStrips(); } });
+// meta inputs
+const metaMap={mNum:'num',mOpp:'opponent',mDown:'down',mDist:'dist',mNotes:'notes'};
+Object.entries(metaMap).forEach(([id,k])=>$('#'+id).addEventListener('input',e=>{ card[k]=k==='num'?(+e.target.value||1):e.target.value; markDirty(); }));
+// drag
+let drag=null;
+function toYards(cx,cy){ const svg=$('#card svg'); const pt=svg.createSVGPoint(); pt.x=cx; pt.y=cy; const q=pt.matrixTransform(svg.getScreenCTM().inverse());
+  let x=(q.x-PAD)/U-HALF, y=ui.flip?(q.y-PAD)/U+YMIN:YMAX-(q.y-PAD)/U; const sn=v=>Math.round(v*2)/2;
+  return [sn(Math.max(-HALF+0.5,Math.min(HALF-0.5,x))), sn(Math.max(YMIN+0.5,Math.min(YMAX-0.5,y)))]; }
+$('#card').addEventListener('pointerdown',e=>{
+  const g=e.target.closest('.pl');
+  if(!g){ if(ui.sel){ ui.sel=null; renderCard(); renderInspector(); } return; }
+  e.preventDefault(); drag={key:g.dataset.key,x0:e.clientX,y0:e.clientY,moved:false};
+});
+window.addEventListener('pointermove',e=>{ if(!drag) return; if(!drag.moved&&Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0)<4) return;
+  drag.moved=true; const [x,y]=toYards(e.clientX,e.clientY); setOv(drag.key,{x,y}); ui.sel=drag.key; renderCard(); });
+window.addEventListener('pointerup',()=>{ if(!drag) return; const {key,moved}=drag; drag=null; if(!moved) ui.sel=ui.sel===key?null:key; renderCard(); renderInspector(); renderStrips(); });
+
+renderAll();
+</script>
